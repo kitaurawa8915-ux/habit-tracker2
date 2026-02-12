@@ -280,6 +280,42 @@ function deleteCategory(id){
   }
 }
 
+function moveCategoryUp(id){
+  const idx=cats.findIndex(c=>c.id===id);
+  if(idx>0){
+    [cats[idx-1],cats[idx]]=[cats[idx],cats[idx-1]];
+    localStorage.setItem('cats',JSON.stringify(cats));
+    render();
+  }
+}
+
+function moveCategoryDown(id){
+  const idx=cats.findIndex(c=>c.id===id);
+  if(idx<cats.length-1){
+    [cats[idx],cats[idx+1]]=[cats[idx+1],cats[idx]];
+    localStorage.setItem('cats',JSON.stringify(cats));
+    render();
+  }
+}
+
+function moveSubItemUp(catId,idx){
+  if(idx>0){
+    [st.subs[catId][idx-1],st.subs[catId][idx]]=[st.subs[catId][idx],st.subs[catId][idx-1]];
+    [st.prog[catId].s[idx-1],st.prog[catId].s[idx]]=[st.prog[catId].s[idx],st.prog[catId].s[idx-1]];
+    localStorage.setItem('sc',JSON.stringify(st.subs));
+    render();
+  }
+}
+
+function moveSubItemDown(catId,idx){
+  if(idx<st.subs[catId].length-1){
+    [st.subs[catId][idx],st.subs[catId][idx+1]]=[st.subs[catId][idx+1],st.subs[catId][idx]];
+    [st.prog[catId].s[idx],st.prog[catId].s[idx+1]]=[st.prog[catId].s[idx+1],st.prog[catId].s[idx]];
+    localStorage.setItem('sc',JSON.stringify(st.subs));
+    render();
+  }
+}
+
 function addSubItem(catId){
   if(!st.subs[catId])st.subs[catId]=[];
   st.subs[catId].push({name:'新しい項目',emoji:'💪',img:'',desc:'',sets:''});
@@ -474,8 +510,12 @@ function render(){
                     `}
                   </div>
                   ${st.editingCat!==c.id?`
-                    <button onclick="editCat('${c.id}')" class="text-stone-400 hover:text-stone-600 p-1 mr-2">✏️</button>
-                    ${cats.length>1?`<button onclick="deleteCategory('${c.id}')" class="text-red-400 hover:text-red-600 p-1 mr-2">🗑️</button>`:''}
+                    <div class="flex gap-1">
+                      ${cats.indexOf(c)>0?`<button onclick="moveCategoryUp('${c.id}')" class="text-stone-400 hover:text-stone-600 p-1" title="上へ移動">▲</button>`:''}
+                      ${cats.indexOf(c)<cats.length-1?`<button onclick="moveCategoryDown('${c.id}')" class="text-stone-400 hover:text-stone-600 p-1" title="下へ移動">▼</button>`:''}
+                      <button onclick="editCat('${c.id}')" class="text-stone-400 hover:text-stone-600 p-1">✏️</button>
+                      ${cats.length>1?`<button onclick="deleteCategory('${c.id}')" class="text-red-400 hover:text-red-600 p-1">🗑️</button>`:''}
+                    </div>
                   `:''}
                 </div>
                 <button onclick="st.exp['${c.id}']=!st.exp['${c.id}'];render()" class="ml-2 text-stone-400">
@@ -507,6 +547,10 @@ function render(){
                             ${s.desc?`<div class="text-sm text-stone-600 whitespace-pre-wrap leading-relaxed mb-2">${s.desc}</div>`:''}
                             ${s.img?`<a href="${s.img}" target="_blank" class="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">🔗 参考画像</a>`:''}
                             ${!s.desc&&!s.sets&&!s.img?'<div class="text-sm text-stone-400 italic">詳細未設定</div>':''}
+                          </div>
+                          <div class="flex flex-col gap-1">
+                            ${i>0?`<button onclick="moveSubItemUp('${c.id}',${i})" class="text-stone-400 hover:text-stone-600 text-xs" title="上へ移動">▲</button>`:'<div class="h-4"></div>'}
+                            ${i<st.subs[c.id].length-1?`<button onclick="moveSubItemDown('${c.id}',${i})" class="text-stone-400 hover:text-stone-600 text-xs" title="下へ移動">▼</button>`:'<div class="h-4"></div>'}
                           </div>
                           <button onclick="edit('${c.id}',${i})" class="text-stone-400 hover:text-stone-600 p-1">✏️</button>
                           ${st.subs[c.id].length>1?`<button onclick="deleteSubItem('${c.id}',${i})" class="text-red-400 hover:text-red-600 p-1">🗑️</button>`:''}
